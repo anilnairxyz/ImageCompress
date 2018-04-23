@@ -42,6 +42,8 @@ def compress(image_id):
     Return an accepted response - 202
     """
     try:
+        # Request image from the ImageStore webservice
+        # Technical debt: separate function for this
         image_type = request.args.get('type')
         if not image_type:
             raise TypeError
@@ -53,6 +55,9 @@ def compress(image_id):
         if raw_image_response.status_code != 200:
             raise ValueError
         raw_image = (raw_image_response.json())['image']
+
+        # Compress the image and save it
+        # Technical debt: could be better organized
         if not _compress_image(raw_image):
             raise Exception
         response = {'status': 'OK',
