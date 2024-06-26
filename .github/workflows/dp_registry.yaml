@@ -1,0 +1,40 @@
+# .github/workflows/dp_registry.yaml
+name: Register Data Product
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: "prod"
+        type: environment
+      dp_spec_file_path:
+        description: "Path to the data product spec file"
+        required: true
+        default: "./templates/data_product_spec.json"
+
+jobs:
+  register_data_product:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    name: Register a data product
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get specification
+        id: get_specification
+        run: |
+          spec_content=$(cat ${{ github.event.inputs.dp_spec_file_path }})
+          echo "SPEC_CONTENT<<EOF" >> $GITHUB_ENV
+          echo "$spec_content" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+    
+      - name: register data product
+        id: dp_registry
+        uses: anilnairxyz/AsyncWebApp/actions/dp_registry@v0.1.0
+        with:
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          DP_SPEC: ${{ env.SPEC_CONTENT }}
